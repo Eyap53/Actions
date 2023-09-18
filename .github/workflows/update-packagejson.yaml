@@ -1,10 +1,14 @@
-name: (R) Update package.json
+name: (R) Update package.json and Changelog.md
 
 on:
   workflow_call:
     inputs:
-      file-path:
+      file-path-package:
         description: "package.json path to update. You can input multiline paths."
+        required: true
+        type: string
+      file-path-changelog:
+        description: "changelog.md path to update. You can input multiline paths."
         required: true
         type: string
       tag:
@@ -48,6 +52,7 @@ jobs:
         run: |
           echo "GIT_TAG=${{ inputs.tag }}" | tee -a "$GITHUB_ENV"
           echo "DRY_RUN=${{ inputs.dry-run }}" | tee -a "$GITHUB_ENV"
+          echo "DATE=$(date +'%Y-%m-%d')"
           echo "branch-name=${{ env.DRY_RUN_BRANCH_PREFIX }}-${{ inputs.tag }}" | tee -a "$GITHUB_OUTPUT"
           echo "is-branch-created=${{ inputs.dry-run }}" | tee -a "$GITHUB_OUTPUT"
 
@@ -55,7 +60,7 @@ jobs:
 
       - name: Output package.json (Before)
         run: |
-          inputs="${{ inputs.file-path }}"
+          inputs="${{ inputs.file-path-package }}"
           IFS=$'\n'
           for file in $inputs; do
             echo "Showing package.json for $file (Before)"
@@ -64,7 +69,7 @@ jobs:
 
       - name: Update package.json to version ${{ env.GIT_TAG }}
         run: |
-          inputs="${{ inputs.file-path }}"
+          inputs="${{ inputs.file-path-package }}"
           IFS=$'\n'
           for file in $inputs; do
             echo "Updating package.json for $file"
@@ -73,10 +78,37 @@ jobs:
 
       - name: Output package.json (After)
         run: |
-          inputs="${{ inputs.file-path }}"
+          inputs="${{ inputs.file-path-package }}"
           IFS=$'\n'
           for line in $inputs; do
             echo "Showing package.json for $line (After)"
+            cat "$line"
+          done
+
+      - name: Output changelog.md (Before)
+        run: |
+          inputs="${{ inputs.file-path-changelog }}"
+          IFS=$'\n'
+          for file in $inputs; do
+            echo "Showing changelog.md for $file (Before)"
+            cat "$file"
+          done
+
+      - name: Update changelog.md to version ${{ env.GIT_TAG }}
+        run: |
+          inputs="${{ inputs.file-path-changelog }}"
+          IFS=$'\n'
+          for file in $inputs; do
+            echo "Updating changelog.md for $file"
+            sed -i -e "s/Unreleased/\[${{ env.GIT_TAG }}\] - ${{ env.DATE }}/" ${file}
+          done
+
+      - name: Output changelog.md (After)
+        run: |
+          inputs="${{ inputs.file-path-changelog }}"
+          IFS=$'\n'
+          for line in $inputs; do
+            echo "Showing changelog.md for $line (After)"
             cat "$line"
           done
 
@@ -90,7 +122,7 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "feat: Update package.json to ${{ env.GIT_TAG }}" -a
+          git commit -m "feat: Update package.json && CHANGELOG.md to ${{ env.GIT_TAG }}" -a
           echo "sha=$(git rev-parse HEAD)" | tee -a "$GITHUB_OUTPUT"
 
       - name: Check sha
