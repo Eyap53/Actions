@@ -132,7 +132,7 @@ jobs:
 
       - name: Create Tag
         if: ${{ steps.check_update.outputs.changed == '1' && inputs.push-tag }}
-        run: git tag ${{ env.GIT_TAG }}
+        run: git tag v${{ env.GIT_TAG }}
 
       - name: Push changes
         if: ${{ env.DRY_RUN == 'false' && steps.check_update.outputs.changed == '1' }}
