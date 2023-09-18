@@ -52,7 +52,7 @@ jobs:
         run: |
           echo "GIT_TAG=${{ inputs.tag }}" | tee -a "$GITHUB_ENV"
           echo "DRY_RUN=${{ inputs.dry-run }}" | tee -a "$GITHUB_ENV"
-          echo "DATE=$(date +'%Y-%m-%d')"
+          echo "DATE=$(date +'%Y-%m-%d')" | tee -a "$GITHUB_ENV"
           echo "branch-name=${{ env.DRY_RUN_BRANCH_PREFIX }}-${{ inputs.tag }}" | tee -a "$GITHUB_OUTPUT"
           echo "is-branch-created=${{ inputs.dry-run }}" | tee -a "$GITHUB_OUTPUT"
 
